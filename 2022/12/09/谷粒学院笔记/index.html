@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        HE1i0S&#39;s Personal Page
+    </title>
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            谷粒商城笔记
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1>数据库</h1>
+<h2 id="分表">分表</h2>
+<p>1.水平分表</p>
+<p>2.垂直分表</p>
+<h2 id="MyBatis-plus">MyBatis-plus</h2>
+<h2 id="1-自动转换">1.自动转换</h2>
+<p>字段user_name会自动转化为属性userName;</p>
+<h2 id="2-自动填充">2.自动填充</h2>
+<p>​	实现 <strong>MetaObjectHandler</strong> 接口并加上**@Component**让Spring管理</p>
+<h2 id="3-主键设置">3.主键设置</h2>
+<p>UUID: 16字节，不安全，无法排序，适用于小规模分布式架构用，最好设置createTime和updateTime来辅助排序<br>
+雪花ID:适用于大规模分布式架构，与时钟有关</p>
+<p>[[数据库主键设计]]</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">package</span> com.atguigu.mybatisplus.handler;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyMetaObjectHandler</span> <span class="keyword">implements</span> <span class="title class_">MetaObjectHandler</span> &#123;</span><br><span class="line"><span class="comment">//1.实现**MetaObjectHandler**</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">insertFill</span><span class="params">(MetaObject metaObject)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;start insert fill ....&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.setFieldValByName(<span class="string">&quot;createTime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Date</span>(), metaObject);</span><br><span class="line">        <span class="built_in">this</span>.setFieldValByName(<span class="string">&quot;updateTime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Date</span>(), metaObject);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateFill</span><span class="params">(MetaObject metaObject)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;start update fill ....&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.setFieldValByName(<span class="string">&quot;updateTime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Date</span>(), metaObject);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>更新时间和创建时间</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    ......</span><br><span class="line">    <span class="comment">//2、添加注解</span></span><br><span class="line">    <span class="meta">@TableField(fill = FieldFill.INSERT)</span></span><br><span class="line">    <span class="keyword">private</span> Date createTime;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//@TableField(fill = FieldFill.UPDATE)</span></span><br><span class="line">    <span class="meta">@TableField(fill = FieldFill.INSERT_UPDATE)</span></span><br><span class="line">    <span class="keyword">private</span> Date updateTime;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="3-乐观锁与悲观锁">3.乐观锁与悲观锁</h2>
+<h3 id="概念">概念</h3>
+<p>乐观锁：提交之前先检查，如果被改动过就重新取数据再操作</p>
+<p>悲观锁：只能一人操作，另外一个只能等着</p>
+<h3 id="解决方案：">解决方案：</h3>
+<ul>
+<li>数据库中添加version字段</li>
+<li>取出记录时，获取当前version</li>
+<li>更新时，version + 1，如果where语句中的version版本不对，则更新失败</li>
+</ul>
+<h4 id="1-MP创建config">1.MP创建config</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.atguigu.mybatis_plus.config;</span><br><span class="line"></span><br><span class="line"><span class="meta">@EnableTransactionManagement</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@MapperScan(&quot;com.atguigu.mybatis_plus.mapper&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusConfig</span> &#123;</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+<h4 id="2-注册MP自带乐观锁插件">2.注册MP自带乐观锁插件</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 乐观锁插件</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> OptimisticLockerInterceptor <span class="title function_">optimisticLockerInterceptor</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">OptimisticLockerInterceptor</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-数据库增加version字段">3.数据库增加version字段</h4>
+<h4 id="4-修改实体类，加入-version-注解">4.修改实体类，加入**@version**注解</h4>
+<h3 id="作用：在使用MP自带更新方法时，会自动检查version字段">作用：在使用MP自带更新方法时，会自动检查version字段</h3>
+<h3 id="–全程使用的注解：">–全程使用的注解：</h3>
+<p>@Configuration：标记为配置类</p>
+<p>@Bean：bean节点</p>
+<h2 id="4-分页方法">4.分页方法</h2>
+<p>添加分页插件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> PaginationInterceptor <span class="title function_">paginationInterceptor</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">PaginationInterceptor</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>MP自带分页，返回</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testSelectPage</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">    Page&lt;User&gt; page = <span class="keyword">new</span> <span class="title class_">Page</span>&lt;&gt;(<span class="number">1</span>,<span class="number">5</span>);</span><br><span class="line">    Page&lt;User&gt; pageParam = userMapper.selectPage(page, <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">    pageParam.getRecords().forEach(System.out::println);</span><br></pre></td></tr></table></figure>
+<h1>搭建项目</h1>
+<h2 id="工程结构：">工程结构：</h2>
+<p>​	<strong>guli_parent：根目录（父工程），管理四个子模块：</strong></p>
+<ul>
+<li>
+<ul>
+<li>
+<p><strong>canal_client</strong>**：canal数据库表同步模块（统计同步数据）**</p>
+</li>
+<li>
+<p><strong>common</strong>**：公共模块父节点**</p>
+</li>
+<li>
+<ul>
+<li>common_util：工具类模块，所有模块都可以依赖于它</li>
+<li>service_base：service服务的base包，包含service服务的公共配置类，所有service模块依赖于它</li>
+<li>spring_security：认证与授权模块，需要认证授权的service服务依赖于它</li>
+</ul>
+</li>
+<li>
+<p><strong>infrastructure</strong>**：基础服务模块父节点**</p>
+</li>
+<li>
+<ul>
+<li>api_gateway：api网关服务</li>
+</ul>
+</li>
+<li>
+<p><strong>service</strong>**：api接口服务父节点**</p>
+</li>
+<li>
+<ul>
+<li>service_edu：教学相关api接口服务</li>
+<li>service_oss：阿里云oss api接口服务</li>
+<li>service_acl：用户权限管理api接口服务（用户管理、角色管理和权限管理等）</li>
+<li>service_cms：cms api接口服务</li>
+<li>service_sms：短信api接口服务</li>
+<li>service_trade：订单和支付相关api接口服务</li>
+<li>service_statistics：统计报表api接口服务</li>
+<li>service_ucenter：会员api接口服务</li>
+<li>service_vod：视频点播api接口服务</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="MP代码生成器生成代码并优化">MP代码生成器生成代码并优化</h2>
+<h3 id="生成代码">生成代码</h3>
+<p>代码生成器放在test中，方便自动删除</p>
+<h3 id="优化">优化</h3>
+<p>在公共模块Common中建service_base中创建BaseEntity，提取公共字段并在代码生成器中设置superclass</p>
+<h2 id="设置返回JSON时间类型">设置返回JSON时间类型</h2>
+<p>在application.yml中设置json</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#spring:</span></span><br><span class="line">  <span class="attr">jackson:</span> <span class="comment">#返回json的全局时间格式</span></span><br><span class="line">    <span class="attr">date-format:</span> <span class="string">yyyy-MM-dd</span> <span class="string">HH:mm:ss</span></span><br><span class="line">    <span class="attr">time-zone:</span> <span class="string">GMT+8</span></span><br></pre></td></tr></table></figure>
+<p>Entity有时间字段的也需要加上注解</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">@JsonFormat(timezone</span> <span class="string">=</span> <span class="string">&quot;GMT+8&quot;</span><span class="string">,</span> <span class="string">pattern</span> <span class="string">=</span> <span class="string">&quot;yyyy-MM-dd&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="配置Swagger">配置Swagger</h2>
+<p>引入依赖并且在config中创建配置文件</p>
+<h1>前后端统一</h1>
+<h2 id="统一返回">统一返回</h2>
+<p>枚举存储code+返回类</p>
+<h2 id="前后端查询功能封装">前后端查询功能封装</h2>
+<p>封装一个Vo(SUCH AS TeacherVo)（Value Object)</p>
+<p>当一个类含有多个属性但并非所有属性都用到的时候，就用一个vo来封装一些需要的属性，前端传入vo,后端处理</p>
+<h2 id="统一处理创建时间和更新时间">统一处理创建时间和更新时间</h2>
+<h3 id="1-创建CommonMetaObjectHandler-公共类">1.创建<strong>CommonMetaObjectHandler</strong> 公共类</h3>
+<h4 id="2-CommonMetaObjectHandler-implements-MetaObjectHandler">2.<strong>CommonMetaObjectHandler</strong> implements MetaObjectHandler</h4>
+<h3 id="3-重写方法，制定策略">3.重写方法，制定策略</h3>
+<h2 id="统一异常处理">统一异常处理</h2>
+<h3 id="ControllerAdvice-用法"><strong>@ControllerAdvice</strong> 用法</h3>
+<p>1.链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43581790/article/details/123871439">https://blog.csdn.net/qq_43581790/article/details/123871439</a></p>
+<p>2.<strong>@ControllerAdvice</strong>就是**@Controller** 的增强版。@ControllerAdvice主要用来处理<strong>全局数据</strong>，一般搭配**@ExceptionHandler**、@ModelAttribute以及**@InitBinder**使用。</p>
+<h3 id="ExceptionHandler用法">@ExceptionHandler用法</h3>
+<p>1.可以用来统一处理方法抛出的异常，当我们使用这个@ExceptionHandler注解时，我们需要定义一个异常的处理方法，给这个方法加上@ExceptionHandler注解，这个方法就会处理类中其他方法（被@RequestMapping注解）抛出的异常。</p>
+<p>2.@ExceptionHandler注解中可以添加参数，参数是某个异常类的class，代表这个方法专门处理该类异常</p>
+<p>3.<a target="_blank" rel="noopener" href="https://blog.csdn.net/lkforce/article/details/98494922">https://blog.csdn.net/lkforce/article/details/98494922</a></p>
+<h3 id="统一异常处理的设置方式">统一异常处理的设置方式</h3>
+<p>1.公共板块新建一个类</p>
+<p>2.类中添加@ControllerAdvice注解，用来全局配置，那么所有方法都应该加上@respondBody</p>
+<p>3.加入ExceptionHandler来指定处理的异常</p>
+<p>4.打印公共enum类中的错误信息。</p>
+<h2 id="统一日志">统一日志</h2>
+<p>创建一个logback-spring.xml</p>
+<p>在全局异常处理类中打注解@sjf4j</p>
+<p>创建ExceptionUtil.java工具类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">log.error(ExceptionUtils.getMessage(e));</span><br></pre></td></tr></table></figure>
+<h1>NODE.JS</h1>
+<h2 id="Node-js有什么用">Node.js有什么用</h2>
+<ul>
+<li>如果你想开发类似JavaWeb的简单的后端程序，那么学习Node.js是一个非常好的选择。</li>
+<li>如果你想部署一些高性能的服务，那么学习Node.js也是一个非常好的选择。</li>
+</ul>
+<h2 id="BFF层">BFF层</h2>
+<ul>
+<li>
+<ul>
+<li>通常他会被用来作一个BFF层，即 Backend For Frontend（服务于前端的后端），通俗的说是一个专门用于为前端业务提供数据的后端程序</li>
+</ul>
+</li>
+<li>
+<ul>
+<li>BFF层的作用是让前端有能力自由组装后台数据，减少大量的业务沟通成本，加快业务的迭代速度。</li>
+<li>无论是数据聚合还是数据剪裁，这类程序的特点是不需要太强大的服务器运算能力，但是对程序的灵活性有较高的要求，这两个特点都正好和Node.js的优势相吻合。</li>
+</ul>
+</li>
+</ul>
+<h1>ECMAScript</h1>
+<h2 id="1、let声明变量">1、let声明变量</h2>
+<p>var 声明的变量没有局部作用域		可以声明多次	可类型提升</p>
+<p>let 声明的变量  有局部作用域			只能声明一次		不可类型提升</p>
+<h2 id="2-解构赋值">2.解构赋值</h2>
+<p>​	1.数组结构</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arr = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]</span><br><span class="line"><span class="keyword">let</span> [x, y, z] = arr</span><br></pre></td></tr></table></figure>
+<p>2.对象解构</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> user = &#123;<span class="attr">name</span>: <span class="string">&#x27;Helen&#x27;</span>, <span class="attr">age</span>: <span class="number">18</span>&#125;</span><br><span class="line"><span class="keyword">let</span> &#123; name, age &#125; =  user<span class="comment">//注意：解构的变量必须和user中的属性同名</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(name, age)</span><br></pre></td></tr></table></figure>
+<h2 id="2-模板字符串">2.模板字符串</h2>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> name = <span class="string">&#x27;Mike&#x27;</span></span><br><span class="line"><span class="keyword">let</span> age = <span class="number">27</span></span><br><span class="line"><span class="keyword">let</span> info = <span class="string">`My Name is <span class="subst">$&#123;name&#125;</span>,I am <span class="subst">$&#123;age+<span class="number">1</span>&#125;</span> years old next year.`</span><span class="comment">//   着重号</span></span><br></pre></td></tr></table></figure>
+<h2 id="3-声明对象简写">3.声明对象简写</h2>
+<p>类型与名字一致可以简写</p>
+<p>如：router:router  =&gt;  router;</p>
+<h2 id="4-定义方法简写">4.定义方法简写</h2>
+<p>省去function</p>
+<h2 id="5-对象拓展运算符（…）">5.对象拓展运算符（…）</h2>
+<p>拓展运算符（…）用于取出参数对象所有可遍历属性然后拷贝到当前对象。</p>
+<h1>Vue中的Value</h1>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Value:&quot;1&quot; //值为字符串</span><br><span class="line"></span><br><span class="line">:Value:&quot;1&quot;   //前面加个冒号，引号中间为表达式，则在此处数值类型为int</span><br></pre></td></tr></table></figure>
+<h2 id="计算属性">计算属性</h2>
+<p>computed和method的区别：计算属性是可以复用的，如果依赖的值没变，只会调用一次，而如果使用method则每次都会调用一次</p>
+<h2 id="组建重用问题">组建重用问题</h2>
+<p>**问题：vue-router导航切换 时，如果两个路由都渲染同个组件，</p>
+<p>组件的生命周期方法（created或者mounted）不会再被调用, 组件会被重用，显示上一个路由渲染出来的自建</p>
+<p>**解决方案：可以简单的在 router-view上加上一个唯一的key，来保证路由切换时都会重新触发生命周期方法，确保组件被重新初始化。</p>
+<h1>校验上传文件类型</h1>
+<p><img src="C:%5CUsers%5COysterG%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20221120171558152.png" alt="image-20221120171558152"></p>
+<p>file.type后面的字符串判断是mime类型</p>
+<h1>@ControllerAdvice</h1>
+<p>@ControllerAdvice注解是Spring3.2中新增的注解，学名是Controller增强器，作用是给Controller控制器添加统一的操作或处理。<br>
+对于@ControllerAdvice，我们比较熟知的用法是结合@ExceptionHandler用于全局异常的处理，但其作用不止于此。ControllerAdvice拆开来就是Controller Advice，关于Advice，在Spring的AOP中，是用来封装一个切面所有属性的，包括切入点和需要织入的切面逻辑。这里ControllerAdvice也可以这么理解，其抽象级别应该是用于对Controller进行切面环绕的，而具体的业务织入方式则是通过结合其他的注解来实现的。@ControllerAdvice是在类上声明的注解，其用法主要有三点：<br>
+1.结合方法型注解@ExceptionHandler，用于捕获Controller中抛出的指定类型的异常，从而达到不同类型的异常区别处理的目的。<br>
+2.结合方法型注解@InitBinder，用于request中自定义参数解析方式进行注册，从而达到自定义指定格式参数的目的。<br>
+3.结合方法型注解@ModelAttribute，表示其注解的方法将会在目标Controller方法执行之前执行。<br>
+从上面的讲解可以看出，@ControllerAdvice的用法基本是将其声明在某个bean上，然后在该bean的方法上使用其他的注解来指定不同的织入逻辑。<strong>不过这里@ControllerAdvice并不是使用AOP的方式来织入业务逻辑的，而是Spring内置对其各个逻辑的织入方式进行了内置支持</strong></p>
+<h1>自定义异常的方式</h1>
+<h2 id="后端">后端</h2>
+<h3 id="1-创建自定义异常类并重写tostring方法">1.创建自定义异常类并重写tostring方法</h3>
+<p>包括code和构造器（构造器可以是2个，一个枚举，一个只有code和message）</p>
+<p>tostring（）方法中包括code和message</p>
+<h3 id="2-在需要处理的代码处捕获并throw异常">2.在需要处理的代码处捕获并throw异常</h3>
+<p>try catch 之后throw 成一个新的自定义异常类  如 throw new xxxexption</p>
+<h3 id="3-在全局异常处理类中捕获异常和处理方式">3.在全局异常处理类中捕获异常和处理方式</h3>
+<h1>openfeign</h1>
+<p>作用：使调远程服务就跟调用本地的一样简单，并且整合了ribbon，可以做负载均衡</p>
+<p>1.消费者引入依赖</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--服务调用--&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-cloud-starter-openfeign&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<p>2.消费者启动类上加上注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableFeignClients</span></span><br></pre></td></tr></table></figure>
+<p>3.生产者写controller</p>
+<p>4.消费者创建feign包，写一个service接口<br>
+1.增加注解@FeignClient指明要调用的名字<br>
+2.定义接口，接口定义方法，用GetMapping指明url</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.atguigu.guli.service.edu.feign;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@FeignClient(&quot;service-oss&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">OssFileService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/admin/oss/file/test&quot;)</span></span><br><span class="line">    R <span class="title function_">test</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>5.将service注入到controller使用</p>
+<h1>ribbon负载均衡</h1>
+<p>![[Pasted image 20221127192326.png]]</p>
+<h1>容错方案</h1>
+<p>常见的容错方案：隔离、超时、限流、熔断、降级</p>
+<h2 id="隔离">隔离</h2>
+<p>线程池隔离</p>
+<h2 id="超时">超时</h2>
+<p>下游服务器响应超时时，断开线程并且释放线程</p>
+<h2 id="限流">限流</h2>
+<p>限制系统输入和输出流量，多了不管</p>
+<h2 id="熔断">熔断</h2>
+<p>下游服务废了时切断服务调用，等都不等直接切断</p>
+<h2 id="降级">降级</h2>
+<p>备用方案</p>
+<h1>容错组件</h1>
+<h2 id="1、Hystrix">1、Hystrix</h2>
+<p>Hystrix是由Netflix开源的一个延迟和容错组件，用于隔离访问远程系统、服务或者第三方库，防止级联失败，从而提升系统的可用性与容错性。</p>
+<h2 id="2、Resilience4J">2、Resilience4J</h2>
+<p>Resilicence4J提供丰富的容错工具，轻量、简单、文档清晰，也是Spring Cloud官方推荐替代Hystrix的产品。不仅如此，Resilicence4j还原生支持Spring Boot 1.x/2.x，而且监控也支持和prometheus等多款主流产品进行整合。</p>
+<h2 id="3、Sentinel">3、Sentinel</h2>
+<p>Sentinel 是阿里巴巴开源的一款断路器实现，在阿里内部已经被大规模采用，非常稳定。</p>
+<h1>Sentinel</h1>
+<p>[[Sentinel总结]]</p>
+
+    </div>
+
+    
+</div>
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" target="_blank" rel="noopener" href="https://hexo.io">Hexo</a>-<a class="flink" target="_blank" rel="noopener" href="https://github.com/sanjinhub/hexo-theme-geek">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
+</div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+</body>
+
+</html>
